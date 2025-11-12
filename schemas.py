@@ -1,48 +1,56 @@
 """
-Database Schemas
-
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
+Database Schemas for IPL Encyclopedia
 
 Each Pydantic model represents a collection in your database.
 Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+- Team -> "team"
+- Player -> "player"
+- Staff -> "staff"
+- Owner -> "owner"
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Optional
 
-# Example schemas (replace with your own):
+class Owner(BaseModel):
+    name: str
+    company: Optional[str] = None
+    logo: Optional[HttpUrl] = None
+    description: Optional[str] = None
+    team_slug: Optional[str] = Field(None, description="Slug of the team they own")
+    website: Optional[HttpUrl] = None
+    twitter: Optional[HttpUrl] = None
+    instagram: Optional[HttpUrl] = None
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+class Staff(BaseModel):
+    full_name: str
+    role: str = Field(..., description="e.g., Head Coach, Bowling Coach, Mentor, Physio")
+    photo: Optional[HttpUrl] = None
+    team_slug: str
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+class Player(BaseModel):
+    full_name: str
+    nationality: str
+    role: str = Field(..., description="Batsman, Bowler, All-rounder, Wicketkeeper")
+    batting_style: Optional[str] = None
+    bowling_style: Optional[str] = None
+    photo: Optional[HttpUrl] = None
+    team_slug: str
+    stats: Optional[dict] = Field(default_factory=dict, description="IPL stats like matches, runs, wickets, strike_rate, economy, average")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Team(BaseModel):
+    name: str
+    slug: str = Field(..., description="URL-friendly unique identifier, e.g., chennai-super-kings")
+    short_name: Optional[str] = None
+    logo: Optional[HttpUrl] = None
+    colors: List[str] = Field(default_factory=list)
+    home_ground: Optional[str] = None
+    city: Optional[str] = None
+    captain: Optional[str] = None
+    head_coach: Optional[str] = None
+    owners: List[str] = Field(default_factory=list, description="Owner names")
+    website: Optional[HttpUrl] = None
+    twitter: Optional[HttpUrl] = None
+    instagram: Optional[HttpUrl] = None
+    achievements: List[str] = Field(default_factory=list)
+    records: List[str] = Field(default_factory=list)
